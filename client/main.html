@@ -1,58 +1,110 @@
+<!------------------------------------------------------------------------------    
+    Subject: User Interface Design 
+    Project: Instagram Clone
+         By: Junghoon Kim, Jihee Kim
+             Created on May 2017
+------------------------------------------------------------------------------->
 <html>
 <head>
 <style>
-div.header {
+/* for debugging */
+/* div{ border:1px solid #ccc;}*/
+body{ margin:0;}
+.header {
     width: 100%;
     height:70px;
     border-bottom: 1px solid #ccc;
 }
-div.header_log{
+.header_log{
   width:30%;
+  padding-left:5px;
   padding-top:10px;
   float:left;
 }
-div.header_search{
+.header_search{
   width:40%;
   float:left;
 }
-div.header_icons{
-  width:200px;
-  padding-top:7px;
+.header_icons{
+  width:20%;
+  padding-top:15px;
+  padding-right:5px;
+  float:right;
+}
+.icon{
+  padding-right:10px;
+  float:right;
+}
+.icon img{
+  width:30px;
+  height:30px;
+}
+.body{
+   margin:0px;
+   background-color: #eee;
+}
+.y_space{ 
+  height:60px;
+}
+.x_space{
+  width:7px;
   float:left;
-  height:50px;
+  margin:0;
+  padding:0;
 }
-div.body{
-    margin: auto;
-    width: 90%;
+.personal_pannel{
+  margin:auto;
+  /*max-width:75%;*/
+  width:796px;
+  height:350px;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  padding-left:0;
+  padding-right:0;
+  background-color:#fff;
 }
-div.intro{
-  margin:50px;
+.info_icon{
+  width:80px;
+  height:80px;
+  padding-left:20px;
+  float:left;
+}
+.info_user{
+  float:left;
+  padding-top:10px;
+  font-family:verdana;
+  font-size: 14px;
+}
+
+div.gallery_pannel{
   width:100%;
-  height:200px;
+  height:268px;
+  margin:0;
+  padding-top:4px;
+  padding-left:4px;
+  overflow:hidden;
 }
 
-div.gallery{
-    margin: 5px;
-    border: 1px solid #ccc;
+.gallery {
+    margin: 6px;
     float: left;
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height:250px;
+    background-color:#fff;
+    overflow: hidden;
 }
-
-div.gallery:hover {
+.gallery:hover {
     border: 1px solid #777;
 }
-
-div.gallery img {
+.gallery img {
     width: 100%;
-    height: auto;
+    
 }
-
-div.desc {
+.desc {
     padding: 15px;
     text-align: center;
 }
-
 input{
     width: 30%;
     padding: 12px 20px;
@@ -62,59 +114,125 @@ input{
     border-radius: 4px;
     box-sizing: border-box;
 }
+.img_person{
+  margin:10px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  vertical-align:top;
+}
+.bottom{
+  height:150px;
+}
 </style>
 </head>
 <body>
 <!--header section-->  
 <div class="header">
   <!--logo display-->
-  <div class ="header_log" style="border:1px solid #ccc">
+  <div class ="header_log">
   <a target="_blank" href="">
     <img src="img/icons/insta_logo.PNG" alt="" width="" height="">
   </a>
   </div>
   <!--search display-->
-  <div class ="header_search" style="border:1px solid #ccc">  
-    <input type="text" id="search_name" placeholder="Search" width="250px">
+  <div class ="header_search">  
+    <input type="text" id="search_name" placeholder="Search" style="width:60%;margin:15px">
   </div>
   <!-- icon display -->
-  <div class ="header_icons" style="border:1px solid #ccc" >
-  <a target="_blank" href="#">
-    <img src="img/icons/navi_icon.PNG" alt="" width="" height="" >
-  </a>  
-  <a target="_blank" href="#">
-    <img src="img/icons/heart_icon.PNG" alt="" width="" height="">
-  </a> 
-  <a target="_blank" href="#">
-    <img src="img/icons/personal_icon.PNG" alt="" width="" height="">
-  </a> 
+  <div class ="header_icons" >
+    <div class="icon">
+    <a target="_blank" href="">
+      <img src="img/icons/header_person.png" alt="" >
+    </a> 
+    </div>
+    <div class="icon"> 
+    <a target="_blank" href="">
+      <img src="img/icons/header_heart.png" alt=""  >
+    </a> 
+    </div> 
   </div>
 </div>
 <!--body section-->
 <div class="body">
-<div class="intro">
+<!-- under header space -->
+<div class="y_space"></div>  
+<div class="personal_pannel">
+  <div class="info_icon">
+    <a target="_blank" href="">
+      <img class="img_person" src="img/sample2.jpg" alt="" >
+    </a>
+  </div>
+  <div class="info_user">icelandic explorer</div>
+  <div class="gallery_pannel">
+  <div class="gallery">
+    <a target="_blank" href="">
+      <img src="img/sample1.jpg" alt="" style="max-width:100%;max-height:100%">
+    </a>
+  </div>
+  <div class="gallery">
+    <a target="_blank" href="">
+      <img src="img/sample2.jpg" alt="Forest" >
+    </a>
+  </div>
+  <div class="gallery">
+    <a target="_blank" href="lights.jpg">
+      <img src="img/sample3.jpg" alt="Northern Lights"  >
+    </a>
+  </div>
+  </div>
 </div>
-<div class="gallery">
-  <a target="_blank" href="">
-    <img src="img/IMG_1519.JPG" alt="" width="300" height="300">
-  </a>
+<div class="personal_pannel">
+  <div class="info_icon">
+    <a target="_blank" href="">
+      <img class="img_person" src="img/sample7.jpg" alt="" >
+    </a>
+  </div>
+  <div class="info_user">margo hupert</div>
+  <div class="gallery_pannel">
+  <div class="gallery">
+    <a target="_blank" href="">
+      <img src="img/sample5.jpg" alt="" >
+    </a>
+  </div>
+  <div class="gallery">
+    <a target="_blank" href="">
+      <img src="img/sample6.jpg" alt="" >
+    </a>
+  </div>
+  <div class="gallery">
+    <a target="_blank" href="lights.jpg">
+      <img src="img/sample7.jpg" alt="" >
+    </a>
+  </div> 
+  </div>
 </div>
-<div class="gallery">
-  <a target="_blank" href="">
-    <img src="img/IMG_1520.JPG" alt="Forest" width="300" height="300">
-  </a>
+<div class="personal_pannel">
+  <div class="info_icon">
+    <a target="_blank" href="">
+      <img class="img_person" src="img/person3.jpg" alt="" >
+    </a>
+  </div>
+  <div class="info_user">ch_clair dream</div>
+  <div class="gallery_pannel">
+  <div class="gallery">
+    <a target="_blank" href="">
+      <img src="img/sample8.jpg" alt="" >
+    </a>
+  </div>
+  <div class="gallery">
+    <a target="_blank" href="">
+      <img src="img/sample9.jpg" alt="" >
+    </a>
+  </div>
+  <div class="gallery">
+    <a target="_blank" href="lights.jpg">
+      <img src="img/sample10.jpg" alt="" >
+    </a>
+  </div> 
+  </div>
 </div>
-<div class="gallery">
-  <a target="_blank" href="lights.jpg">
-    <img src="img/IMG_1521.JPG" alt="Northern Lights" width="300" height="300">
-  </a>
-</div>
-
-<div class="gallery">
-  <a target="_blank" href="">
-    <img src="img/IMG_1529.JPG" alt="Mountains" width="300" height="300">
-  </a>
-</div>
+<div class="bottom">
 </div>
 </body>
 </html>
