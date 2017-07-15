@@ -1,169 +1,26 @@
 <!------------------------------------------------------------------------------    
-    Subject: User Interface Design 
+    Subject: Web Design
     Project: Instagram Clone
-         By: Junghoon Lee, Jihee Kim
-             Created on June 2017
+         By: Junghoon Lee, Jihee Kim, Serhii Sukhin
+             Created on May 2017
 ------------------------------------------------------------------------------->
 <html>
 <head>
-<style>
-/* for debugging */
-/*div{ border:1px solid #ccc;}*/
-body{ margin:0;}
-.header {
-    width: 100%;
-    height:70px;
-    border-bottom: 1px solid #ccc;
-}
-.header_log{
-  width:30%;
-  padding-left:5px;
-  padding-top:10px;
-  float:left;
-}
-.header_search{
-  width:40%;
-  float:left;
-}
-.header_icons{
-  width:20%;
-  padding-top:15px;
-  padding-right:5px;
-  float:right;
-}
-.icon{
-  padding-right:10px;
-  float:right;
-}
-.icon img{
-  width:30px;
-  height:30px;
-}
-.body{
-   margin:0px;
-   background-color: #eee;
-}
-.y_space{ 
-  height:60px;
-}
-.x_space{
-  width:7px;
-  float:left;
-  margin:0;
-  padding:0;
-}
-.personal_pannel{
-  margin:auto;
-  /*max-width:75%;*/
-  width:798px;
-  height:400px;
-  border-top: 1px solid #ccc;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  padding-left:0;
-  padding-right:0;
-  background-color:#fff;
-}
-.info_icon{
-  width:80px;
-  height:80px;
-  padding-left:20px;
-  float:left;
-}
-.info_user{
-  float:left;
-  padding-top:10px;
-  font-family:verdana;
-  font-size: 14px;
-}
-
-.gallery_pannel{
-  width:100%;
-  height:330px;
-  margin:0;
-  padding-top:4px;
-  padding-left:4px;
-  overflow:hidden;
-}
-.gallery_withInfo{
-  width:255px;
-  height:330px;
-  margin-left:2px;
-  margin-right:2px;
-  float:left;
-  overflow:hidden;
-}
-.gallery{
-    margin: 6px;
-    float: left;
-    width: 250px;
-    height:250px;
-    background-color:#fff;
-    overflow: hidden;
-}
-.gallery:hover {
-    border: 1px solid #777;
-}
-.gallery img {
-    width: 100%;
-    
-}
-.comment{
-  width:100%;
-  height:80px;
-  float:left;
-  padding-left:7px;
-  padding-top:0px;
-}
-.likeCount{
-  padding-left:5px;
-  display:inline-block;
-  font-family:verdana;
-  font-size: 13px;
-}
-.desc {
-    padding: 15px;
-    text-align: center;
-}
-input{
-    width: 30%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-.img_person{
-  margin:10px;
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  vertical-align:top;
-}
-.bottom{
-  height:150px;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="css/post.css">
 <script src="js/jquery.min.js"></script>
 <script>
 //onload function
 function onload(){
-/*
-  Promise.resolve()
-  .then(function(){
-    return $.post('follows');
-  })
-  //after defining followers
-  .then(function (followers){
-      followers.forEach(function(follower){
-      alert(follwer.userId);
-  })
-  
-  .catch(function(err){
-    console.log(err);
-  });
-*/
+ /*
+  var statusString = "";
+  if(){//check login status 
+    statusString =   "<a href ='/logout'>sign out</a>"
+  }else{
+    statusString =   "<a href ='/signin.html'>sign in</a>"
+  }
+
+  $('#signin').append(statusString);
+  */
   Promise.resolve()
   .then(function(){
     return $.post('posts');//request posts 
@@ -172,17 +29,17 @@ function onload(){
     $('#posts').html('');
     var htmlString = "";
     htmlString +='<div class="info_icon">'+
-                  '<a target="_blank" href="">'+
-                    '<img class="img_person" src="img/sample7.jpg" alt="" >'+
-                  '</a>'+
-                 '</div>'+
-                 '<div class="info_user"></div>'+
-                 '<div class="gallery_pannel">';
+          '<a target="_blank" href="">'+
+            '<img class="img_person" src="img/sample7.jpg" alt="" >'+
+          '</a>'+
+        '</div>'+
+        '<div class="info_user">margo hupert</div>'+
+        '<div class="gallery_pannel">';
    
     //display just three posts from each person
     var keepgoing=true;
-   
     posts.forEach(function(post,count){
+      //alert(count);
       if(count>2)keepgoing=false;
       if(keepgoing){
           htmlString +=
@@ -191,21 +48,18 @@ function onload(){
                 '<a target="_blank" href="">'+
                   '<img src="'+post.image+'" alt="" >'+
                 '</a>'+
-              '</div>' +
-              '<div class = "comment">' + 
-                '<img onclick = "likeClick(\'' + post._id + '\');" src="img/icons/like_black.png" width="23px">'+
-                  '<span class="likeCount">'+post.likeCount+'&nbsp;likes </span>'+
-                  '<br>' +
-                  post.comment +
-              '</div>' +
+                '</div>' +
+                '<div class = "comment">' + 
+                  '<img onclick = "likeClick(\'' + post._id + '\');" src="img/icons/like_black.png" width="23px"><br>' +
+                    post.comment +
+                '</div>' +
             '</div>';
       
       //alert('cnt'+count);
       }
     });
-    htmlString += '</div>';//end of gallery_pannel
+    htmlString += '</div>';
     $('#posts').append(htmlString);
-    
   })
   .catch(function(err){
     console.log(err);
@@ -246,7 +100,7 @@ function likeClick(id){
   <!-- icon display -->
   <div class ="header_icons" >
     <div class="icon">
-    <a target="_blank" href="">
+    <a target="_self" href="/myPosts.html">
       <img src="img/icons/header_person.png" alt="" >
     </a> 
     </div>
@@ -254,7 +108,10 @@ function likeClick(id){
     <a target="_blank" href="">
       <img src="img/icons/header_heart.png" alt=""  >
     </a> 
-    </div> 
+    </div>
+    <div class="signin">
+      <a href ="/signin.html">sign in</a>
+    </div>
   </div>
 </div>
 <!--body section-->
@@ -306,33 +163,7 @@ function likeClick(id){
   </div> 
   </div>
 </div>
-<!--
-<div class="personal_pannel">
-  <div class="info_icon">
-    <a target="_blank" href="">
-      <img class="img_person" src="img/person3.jpg" alt="" >
-    </a>
-  </div>
-  <div class="info_user">ch_clair dream</div>
-  <div class="gallery_pannel">
-  <div class="gallery">
-    <a target="_blank" href="">
-      <img src="img/sample8.jpg" alt="" >
-    </a>
-  </div>
-  <div class="gallery">
-    <a target="_blank" href="">
-      <img src="img/sample9.jpg" alt="" >
-    </a>
-  </div>
-  <div class="gallery">
-    <a target="_blank" href="lights.jpg">
-      <img src="img/sample10.jpg" alt="" >
-    </a>
-  </div> 
-  </div>
-</div>
--->
+
 <div class="bottom">
 </div>
 </body>

@@ -1,14 +1,35 @@
-//
+/*------------------------------------------------------------------------------    
+    Subject: Web Design
+    Project: Instagram Clone
+         By: Junghoon Lee, Jihee Kim, Serhii Sukhin
+            Created on May 2017
+-------------------------------------------------------------------------------*/
+
 // # SimpleServer
-//
-// A simple chat server using Socket.IO, Express, and Async.
-//
-var http = require('http');
-var path = require('path');
-var express = require('express');
-var mongoose = require('mongoose');
-var Post = require('./models/post');
-var Follow = require('./models/follow');
+
+const http = require('http');
+const path = require('path');
+//express related
+const express = require('express');
+const bodyParser = require('body-parser');
+
+//session
+const session = require('express-session');  
+const mongoSession = require('connect-mongodb-session')(session);
+const passport = require('passport');
+const userAuth = require('./userAuth.js');
+const hash = require('./utils/hash.js');
+
+//database
+const dbUrl = 'mongodb://jiheekim:1qa2ws3ed@ds064799.mlab.com:64799/web_dev';
+const mongoose = require('mongoose');
+const Post = require('./models/Post');
+const Follow = require('./models/Follow');
+const User = require('./models/User.js');
+const PasswordReset = require('./models/PasswordReset.js'); 
+
+//sendmail
+const email = require('./utils/sendmail.js');
 //
 // ## SimpleServer `SimpleServer(obj)`
 //
@@ -17,54 +38,187 @@ var Follow = require('./models/follow');
 //
 var router = express();
 var server = http.createServer(router);
-//-->
 
-mongoose.connect('mongodb://jiheekim:1qa2ws3ed@ds064799.mlab.com:64799/web_dev');
-/*
-var post = new Post({
-  image:'./img/sample1.jpg',
-  comment: 'cool icon',
-  likeCount:0,
-  feedbackCount:0
-  });
-  
-post.save(function (err) {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log('saved.');
-  }
-});  
-*/
-/*
-var Cat = mongoose.model('Cat', { name: String });
+//establish connection to mongodb instance
+mongoose.connect(dbUrl);
 
-var kitty = new Cat({ name: 'Zildjian' });
-kitty.save(function (err) {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log('meow');
-  }
+//create a sessions collection 
+var mongoSessionStore = new mongoSession({
+  uri: dbUrl,
+  collection: 'sessions'
 });
-//<--
-*/
+
+//tell the router (i.e. express) where to find static files
+router.use(express.static(path.resolve(__dirname, 'client')));
+
+//tell the router to parse JSON data for us and put it into req.body
+router.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.json());
+
+//add session support
+router.use(session({
+  secret: process.env.SESSION_SECRET || 'mySecretKey', 
+  store: mongoSessionStore,
+  resave: true,
+  saveUninitialized: false
+}));
+
+//add passport for authentication support
+router.use(passport.initialize());
+router.use(passport.session());
+userAuth.init(passport);
+
+//tell the router to go first post page after login authorization
+router.get('/signin', function(req, res){
+  console.log('client requests signin');
+  res.redirect('/signin.html');
+});
+
+
+
+//tell the router to go first post page after login authorization
+router.get('/signup', function(req, res){
+  console.log('client requests signup');
+  res.redirect('/signup.html');
+});
+
+//tell the router how to handle a post request from the signin page
+router.post('/signin', function(req, res, next) {
+  //tell passport to attempt to authenticate the login
+  console.log("singin.....");
+  console.log(req.username);
+  console.log(req.body.username);
+  passport.authenticate('login', function(err, user, info) {
+    //callback returns here
+    if (err){
+      //if error, say error
+      res.json({isValid: false, message: 'internal error'});
+    } else if (!user) {
+      //if no user, say invalid login
+      res.json({isValid: false, message: 'try again'});
+    } else {
+      //log this user in
+      req.logIn(user, function(err){
+        if (!err)
+          //send a message to the client to say so
+          res.json({isValid: true, message: 'welcome ' + user.email});
+      });
+    }
+  })(req, res, next);
+});
+
+
+router.post('/signout', function(req, res){
+  console.log("1"+req.user);
+  req.logout();
+  console.log("2"+req.user);
+   //res.sendFile(path.join(__dirname, 'client/view','signin.html'));
+  res.json({});
+});
+
+//tell the router how to handle a post request to the join page
+router.post('/signup', function(req, res, next) {
+    console.log('client request signup');
+    console.log(req.user);
+    passport.authenticate('signup', function(err, user, info) {
+    console.log('client request signup'+user+","+err+","+info);
+    if (err){
+      console.log('-----1');
+      res.json({isValid: false, message: 'internal error'});    
+    } else if (!user) {
+      console.log('-----2');
+      res.json({isValid: false, message: 'try again!'});
+    } else {
+      //log this user in since they've just joined
+      console.log('-----3');
+      req.logIn(user, function(err){
+        if (!err)
+          //send a message to the client to say so
+          res.json({isValid: true, message: 'welcome ' + user.email});
+      });
+    }
+    console.log('client1');
+  })(req, res, next);
+});
+
+router.get('/passwordreset', (req, res) => {
+  console.log('client requests passwordreset');
+  res.sendFile(path.join(__dirname, 'client', 'passwordreset.html'));
+});
+
+router.post('/passwordreset', (req, res) => {
+    Promise.resolve()
+    .then(function(){
+        //see if there's a user with this email
+        console.log(req.body.email);
+        return User.findOne({'email' : req.body.email});
+    })
+    .then(function(user){
+     
+      if (user){
+        var pr = new PasswordReset();
+        pr.userId = user.id;
+        pr.password = hash.createHash(req.body.password);
+        pr.expires = new Date((new Date()).getTime() + (20 * 60 * 1000));
+        console.log("before1"+pr);
+        pr.save()
+        .then(function(pr){
+          if (pr){
+            email.send(req.body.email, 'password reset', 'https://test2-jkim789.c9users.io/verifypassword?id=' + pr.id);
+          }
+        });
+      }
+    })
+});
+
+router.get('/verifypassword', function(req, res){
+    var password;
+    console.log("verifing.. password");
+    Promise.resolve()
+    .then(function(){
+      //console.log(req);
+      console.log(req.body);
+      console.log(req.query.id);
+      return PasswordReset.findById(req.query.id);
+    })
+    .then(function(pr){
+      console.log("verifing.. password2:"+ pr);
+      if (pr){
+        if (pr.expires > new Date()){
+           console.log("here");
+          password = pr.password;
+          //see if there's a user with this email
+          console.log("verifing.. password2:"+pr);
+          return User.findById(pr.userId);
+        }
+      }
+    })
+    .then(function(user){
+      console.log(user);
+      if (user){
+        user.password = password;
+        console.log("verifing.. password3:"+user);
+        return user.save();
+      }
+    })
+    res.sendfile(path.join(__dirname, 'client','signin.html'))
+});
+
+
+//tell the router how to handle a get request to the posts page
+router.get('/posts', userAuth.isAuthenticated, function(req, res){
+  console.log('client requests posts.html');
+  //use sendfile to send our posts.html file
+  res.sendFile(path.join(__dirname, 'client','posts.html'));
+})
+
+//request posts page ( posts from following users)
 router.post('/posts',function(req, res){
- /* not completed 
-  console.log('post request');
-  var followsArray;
-  Follow.find({userId:"kjh@gmail.com"}).select("followId")
-  .then(function(paths){
-   console.log(JSON.stringify(paths));
-  })
-  .catch(function(err){
-    console.log(err);
-    //Post.find({userId:{$in:followsArray}})
-  })
-  */
+  
   Post.find()
   .then(function(paths){
-    console.log('post response ');
+    //console.log('post response1 ');
+    //console.log(paths); 
     res.json(paths);
   })
   .catch(function(err){
@@ -72,12 +226,36 @@ router.post('/posts',function(req, res){
   })
  
 });
+
+//tell the router how to handle a get request to the posts page
+router.get('/myPosts', userAuth.isAuthenticated, function(req, res){
+  console.log('client requests myPosts.html');
+  //use sendfile to send our posts.html file
+  res.sendFile(path.join(__dirname, 'client','myPosts.html'));
+})
+
+
+//request myPosts 
+router.post('/myPosts',userAuth.isAuthenticated, function(req, res){
+  console.log("request myPosts");
+  console.log("req:"+req.user);
+  console.log("request user username:"+req.user.email);
+  Post.find({userId:req.user.email})
+  .then(function(paths){
+    console.log('post response1 ');
+    console.log(paths); 
+    res.json(paths);
+  })
+  .catch(function(err){
+    console.log(err);
+  })
+});
+
 router.post('/follows',function(req, res){
   console.log('follows request');
   
   Follow.find({userId:"kjh@gmail.com"}).select("followId")
   .then(function(paths){
-    console.log('post response ');
     console.log(paths);
     res.json(paths);
   })
@@ -97,13 +275,11 @@ router.post('/incrLike', function(req, res){
   .then(function(post){
     res.json({id: req.body.id, count: post.likeCount});
   })
-  .catch(function(err){
+  .catch(function(err){ 
     console.log(err);
   })
 });
 
-//notifying static location
-router.use(express.static(path.resolve(__dirname, 'client')));
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){
   var addr = server.address();
