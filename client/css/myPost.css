@@ -23,7 +23,6 @@ body{ margin:0;}
 .icon{
   padding-right:10px;
   float:right;
-  vertical-align:bottom;
 }
 .icon img{
   width:30px;
@@ -44,20 +43,32 @@ body{ margin:0;}
    background-color: #eee;
 }
 .y_space{ 
-  height:60px;
+  height:80px;
 }
+.post_button{
+  /*color:#8EC5CE;*/
+  color:#8EC5CE;
 
+  width:150px;
+  height:30px;
+}
 .x_space{
   width:7px;
   float:left;
   margin:0;
   padding:0;
 }
+.div_post_button{
+  margin:0 auto;
+  width:798px;
+  height:40px;
+  text-align:right;
+}
 .personal_pannel{
-  margin:auto;
+  margin:0 auto;
   /*max-width:75%;*/
   width:798px;
-  height:400px;
+  overflow:auto;
   border-top: 1px solid #ccc;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
@@ -69,6 +80,8 @@ body{ margin:0;}
   width:80px;
   height:80px;
   padding-left:20px;
+  margin-top:20px;
+  margin-bottom:20px;
   float:left;
 }
 .info_user{
@@ -77,47 +90,31 @@ body{ margin:0;}
   font-family:verdana;
   font-size: 14px;
 }
-.gallery_pannel{
+
+.post_withInfo{
   width:100%;
-  height:330px;
-  margin:0;
-  padding-top:4px;
-  padding-left:4px;
-  overflow:hidden;
-}
-.gallery_withInfo{
-  width:255px;
-  height:330px;
+  float:left;
+  overflow:auto;
   margin-left:2px;
   margin-right:2px;
-  float:left;
-  overflow:hidden;
+  border-top: 1px solid #ccc;
 }
-.gallery{
-    margin: 6px;
-    float: left;
-    width: 250px;
-    height:250px;
+.post{
+    margin: auto;
+    width: 500px;
+    height:500px;
+    margin-top:100px;
+    margin-bottom:100px;
     background-color:#fff;
-    overflow: hidden;
+    overflow: auto;
 }
-.gallery:hover {
-    border: 1px solid #777;
-}
-.gallery img {
-    width: 100%;
-    
-}
+
 .comment{
   width:100%;
   height:80px;
   float:left;
   padding-left:7px;
   padding-top:0px;
-}
-.likeCount{
-  font-family:"PT Sans";
-  font-size:12px;
 }
 .desc {
     padding: 15px;

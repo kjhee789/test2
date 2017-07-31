@@ -85,6 +85,10 @@ router.get('/signup', function(req, res){
 //tell the router how to handle a post request from the signin page
 router.post('/signin', function(req, res, next) {
   //tell passport to attempt to authenticate the login
+  console.log("singin.....");
+  console.log(req.username);
+  console.log(req.body.username);
+  
   passport.authenticate('login', function(err, user, info) {
     //callback returns here
     if (err){
@@ -105,29 +109,96 @@ router.post('/signin', function(req, res, next) {
 });
 
 router.post('/signout', function(req, res){
+  console.log("1"+req.user);
   req.logout();
+  console.log("2"+req.user);
+   //res.sendFile(path.join(__dirname, 'client/view','signin.html'));
   res.json({});
   console.log("session id : " + req.session.id);
 });
 
 //tell the router how to handle a post request to the join page
 router.post('/signup', function(req, res, next) {
-
-    var email = req.body.username;
-    var userName = req.body.userName;
+    console.log('client request signup');
+    //console.log("user:"+req.user);
+    console.log("body:"+req.userName);
+    console.log("photo:"+req.files.userPhoto);
+    
+    
+    
     passport.authenticate('signup', function(err, user, info) {
+    console.log('client request signup'+user+","+err+","+info);
     if (err){
       res.json({isValid: false, message: 'internal error'});    
     } else if (!user) {
-      res.json({isValid: false, message: 'try again'});
+      res.json({isValid: false, message: 'try again!'});
     } else {
+      //--->>updating (newly added)
+      var email = req.body.email;
+      var userName = req.body.userName;
+      var userPhoto;
       //log this user in since they've just joined
-      console.log("req.body.userName=>"+req.body.userName);
-      console.log("req.user=>"+req.user);
-      User.update({email:email},{userName:userName},function(err){
-        console.log(userName + "is not saved!")
-      });
-      
+      //after this signup called by passport, save other data including   
+       if (req.files){
+            // The name of the input field is used to retrieve the uploaded file 
+            userPhoto = req.files.userPhoto;
+            //invent a unique file name so no conflicts with any other files
+            var guid = Guid.create();
+            //figure out what extension to apply to the file
+            var extension = '';
+            switch(userPhoto.mimetype){
+              case 'image/jpeg':
+                extension = '.jpg';
+                break;
+              case 'image/png':
+                extension = '.png';
+                break;
+              case 'image/bmp':
+                extension = '.bmp';
+                break;
+              case 'image/gif':
+                extension = '.gif';
+                break;
+            }
+        
+            //if we have an extension, it is a file type we will accept
+            if (extension){
+              //construct the file name
+              var filename = guid + extension;
+              // Use the mv() method to place the file somewhere on your server 
+              userPhoto.mv('./client/img/profile/' + filename, function(err) {
+                //if no error
+                if (!err){
+                  console.log("updating:" + email);
+                  console.log("Profile P.:" + userPhoto);
+                  //create a post for this image
+                  /*
+                  var post = new Post();
+                  post.userId = req.user.email;
+                  post.image = './img/posts/' + filename;
+                  post.likeCount = 0;
+                  post.comment = req.body.comment;
+                  post.feedbackCount = 0;
+                  //save it
+                  post.save()
+                  .then(function(){
+                    res.json({success: true, message: 'all good'});            
+                  })
+                  */
+                } else {
+                  response.message = 'internal error';
+                  res.json(response);
+                }
+              });
+            } else {
+              response.message = 'unsupported file type';
+              res.json(response);
+            }
+          } else {
+            response.message = 'no files';
+            res.json(response);
+          }
+       //<<----updating (newly added)       
       req.logIn(user, function(err){
         if (!err)
           //send a message to the client to say so
@@ -210,16 +281,11 @@ router.get('/posts',function(req, res){
 
 //request posts page (all posts from following users)
 router.post('/posts',function(req, res){
-   var loginId = '';
-   console.log("req.user:"+req.user);
-   if(req.user)
-   { 
-     loginId = req.user.id;
-   }//if logged in
-
-   Post.find().sort({userId:1,createdDate:-1})
+   Post.find().sort({userId:1,createDate:-1})
   .then(function(paths){
-    res.json({posts:paths,loginId:loginId});
+    //console.log('post response1 ');
+    //console.log(paths); 
+    res.json({posts:paths,loginId:req.user.id});
     //console.log("session id : " + req.session.id);
   })
   .catch(function(err){
@@ -244,19 +310,21 @@ router.post('/myPosts',userAuth.isAuthenticated, function(req, res){
   console.log("cookie info : " + res.cookie.length);
   console.log("session id : " + req.session.id);
 
-  Post.find({userId:req.user.email}).sort({createdDate:-1})
+  Post.find({userId:req.user.email}).sort({createDate:-1})
   .then(function(paths){
-    console.log('my post response1 ');
-    //console.log(paths); 
-    console.log('req.user.userName:'+req.user.userName);
-    res.json({posts:paths,userName:req.user.userName});
+    console.log('post response1 ');
+    console.log(paths); 
+    res.json(paths);
   })
   .catch(function(err){
+    
     console.log("err:"+err);
   })
 });
 
 router.post('/follows',function(req, res){
+  console.log('follows request');
+  
   Follow.find({userId:"kjh@gmail.com"}).select("followId")
   .then(function(paths){
     console.log(paths);
@@ -285,6 +353,69 @@ router.post('/incrLike', userAuth.isAuthenticated, function(req, res){
     console.log(err);
   })
 });  
+
+//tell the router how to handle a post request to upload a file
+router.post('/uploadProfile', userAuth.isAuthenticated, function(req, res) {
+  
+  var response = {success: false, message: ''};
+  //console.log(req.body.comment);
+
+  if (req.files){
+    // The name of the input field is used to retrieve the uploaded file 
+    var userPhoto = req.files.userPhoto;
+    //invent a unique file name so no conflicts with any other files
+    var guid = Guid.create();
+    //figure out what extension to apply to the file
+    var extension = '';
+    switch(userPhoto.mimetype){
+      case 'image/jpeg':
+        extension = '.jpg';
+        break;
+      case 'image/png':
+        extension = '.png';
+        break;
+      case 'image/bmp':
+        extension = '.bmp';
+        break;
+      case 'image/gif':
+        extension = '.gif';
+        break;
+    }
+    
+    //if we have an extension, it is a file type we will accept
+    if (extension){
+      //construct the file name
+      var filename = guid + extension;
+      // Use the mv() method to place the file somewhere on your server 
+      userPhoto.mv('./client/img/posts/' + filename, function(err) {
+        //if no error
+        if (!err){
+          //create a post for this image
+          var post = new Post();
+          post.userId = req.user.email;
+          post.image = './img/posts/' + filename;
+          post.likeCount = 0;
+          post.comment = req.body.comment;
+          post.feedbackCount = 0;
+          //save it
+          post.save()
+          .then(function(){
+            res.json({success: true, message: 'all good'});            
+          })
+        } else {
+          response.message = 'internal error';
+          res.json(response);
+        }
+      });
+    } else {
+      response.message = 'unsupported file type';
+      res.json(response);
+    }
+  } else {
+    response.message = 'no files';
+    res.json(response);
+  }
+});
 
 
 //tell the router how to handle a post request to upload a file
@@ -316,7 +447,7 @@ router.post('/upload', userAuth.isAuthenticated, function(req, res) {
     }
     
     //if we have an extension, it is a file type we will accept
-    if (extension){ 
+    if (extension){
       //construct the file name
       var filename = guid + extension;
       // Use the mv() method to place the file somewhere on your server 
@@ -330,7 +461,6 @@ router.post('/upload', userAuth.isAuthenticated, function(req, res) {
           post.likeCount = 0;
           post.comment = req.body.comment;
           post.feedbackCount = 0;
-          post.userName = req.user.userName;
           //save it
           post.save()
           .then(function(){

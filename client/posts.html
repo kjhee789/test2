@@ -6,82 +6,127 @@
 ------------------------------------------------------------------------------->
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="css/header.css">
 <link rel="stylesheet" type="text/css" href="css/post.css">
 <script src="js/jquery.min.js"></script>
 <script>
+function signout(){
+  Promise.resolve()
+      .then(function(){
+          return $.post('signout');
+      })
+      .then(function(){
+          window.location.replace('signin.html');
+      })
+      .catch(function(err){
+          console.log(err);
+      });
+}
 //onload function
 function onload(){
- /*
-  var statusString = "";
-  if(){//check login status 
-    statusString =   "<a href ='/logout'>sign out</a>"
-  }else{
-    statusString =   "<a href ='/signin.html'>sign in</a>"
-  }
-
-  $('#signin').append(statusString);
-  */
+  
   Promise.resolve()
   .then(function(){
     return $.post('posts');//request posts 
   })
-  .then(function (posts){
-    $('#posts').html('');
-    var htmlString = "";
-    htmlString +='<div class="info_icon">'+
-          '<a target="_blank" href="">'+
-            '<img class="img_person" src="img/sample7.jpg" alt="" >'+
-          '</a>'+
-        '</div>'+
-        '<div class="info_user">margo hupert</div>'+
-        '<div class="gallery_pannel">';
-   
-    //display just three posts from each person
-    var keepgoing=true;
+  .then(function (paths){
+
+    var posts = paths.posts;
+    var loginId = paths.loginId;//login Id from response
+    
+    //display Login or Logtout 
+    var loginDisplayHtml="";
+    if(loginId!=""){
+       loginDisplayHtml="<a href ='javascript:signout();'>Log out</a>";
+    }else{
+       loginDisplayHtml="<a href ='/signin'>Log in</a>";
+    }
+    $('#loginDisplay').html(loginDisplayHtml);
+    
+    //display post
+    var markedUserId = "";
+    var rowNum = 0;
+    var colIndex = 0;
+    var htmlString ="";
+    //While going through all posts, just fetch 3 posts from respective users.
+    //if posts are less than three, just skip placing div
     posts.forEach(function(post,count){
-      //alert(count);
-      if(count>2)keepgoing=false;
-      if(keepgoing){
-          htmlString +=
-            '<div class="gallery_withInfo">' +
-              '<div class="gallery">'+
-                '<a target="_blank" href="">'+
-                  '<img src="'+post.image+'" alt="" >'+
-                '</a>'+
-                '</div>' +
-                '<div class = "comment">' + 
-                  '<img onclick = "likeClick(\'' + post._id + '\');" src="img/icons/like_black.png" width="23px"><br>' +
-                    post.comment +
-                '</div>' +
-            '</div>';
-      
-      //alert('cnt'+count);
+      //If userId is not equal to the previous userId, start replacing new user Id area with setting markedIndex zero.
+      if(markedUserId != post.userId){//new Post 
+        colIndex = 0;
+        if (count!=0) htmlString += '</div></div>'; 
+        markedUserId = post.userId;
       }
+      if(colIndex > 2) return;
+      if(colIndex == 0){
+
+         htmlString +='<div class="personal_pannel" >'+
+                       '<div class="info_icon">'+
+                        '<a target="_blank" href="">'+
+                          '<img class="img_person" src="img/sample7.jpg" alt="" >'+
+                        '</a>'+
+                      '</div>'+
+                      '<div class="info_user">'+post.userName+'</div>'+
+                      '<div class="gallery_pannel">';      
+      }
+   
+      var likeHtmlString ='<img src="img/icons/like_black.png" width="23px" onclick = "likeClick(\'' + post._id + '\');" onMouseOver="this.style.cursor=\'pointer\'">';
+  
+      //if user already liked the post, show red like icon.
+      var alreadyLiked = false;
+      //alert(post.likeIds);
+      
+      post.likeIds.forEach(function(likeId){ 
+        //alert(likeId + "==" +loginId);
+        if(likeId == loginId ){
+          alreadyLiked = true;
+          return;
+        }
+      });   
+      if(alreadyLiked==true){
+        likeHtmlString = '<img  src="img/icons/like_icon.png" width="23px">';
+      }
+      htmlString += '<div class="gallery_withInfo">' +
+                    '<div class="gallery">'+
+                      '<a target="_blank" href="">'+
+                        '<img src="'+post.image+'" alt="" >'+
+                      '</a>'+
+                      '</div>' +
+                      '<div class = "comment">' + 
+                          '<span id="likeIcon'+post._id+'">'+ likeHtmlString + '</span>'+
+                          '<span id="like'+post._id + '">'+post.likeIds.length +'</span><br>'+
+                          post.comment +
+                      '</div>' +
+                  '</div>';  
+      colIndex++;
     });
-    htmlString += '</div>';
+    //alert(htmlString);
     $('#posts').append(htmlString);
   })
   .catch(function(err){
     console.log(err);
   });
-  console.log('onload');
+ 
+  
+ 
 }//end of onload()
 
 // like click function
+// changes the like icon and increment the like count.
 function likeClick(id){
   Promise.resolve()
   .then(function(){
     return $.post('incrLike', {id : id});
   })
-  .then(function(like){
+  .then(function(like){//if success, toggle the like icon to the red icon.
     $('#like' + like.id).html(like.count);
+    $('#likeIcon' + like.id).html('<img  src="img/icons/like_icon.png" width="23px">');
   })
   .catch(function(err){
     console.log(err);
   });
 }
 // like click function end
-
 </script>
 </head>
 <body onload="onload();">
@@ -89,7 +134,7 @@ function likeClick(id){
 <div class="header">
   <!--logo display-->
   <div class ="header_log">
-  <a target="_blank" href="">
+  <a target="_blank" href="/posts">
     <img src="img/icons/insta_logo.PNG" alt="" width="" height="">
   </a>
   </div>
@@ -100,7 +145,7 @@ function likeClick(id){
   <!-- icon display -->
   <div class ="header_icons" >
     <div class="icon">
-    <a target="_self" href="/myPosts.html">
+    <a href="/myPosts">
       <img src="img/icons/header_person.png" alt="" >
     </a> 
     </div>
@@ -110,7 +155,7 @@ function likeClick(id){
     </a> 
     </div>
     <div class="signin">
-      <a href ="/signin.html">sign in</a>
+      <span id ='loginDisplay'></span>
     </div>
   </div>
 </div>
@@ -118,52 +163,9 @@ function likeClick(id){
 <div class="body">
 <!-- under header space -->
 <div class="y_space"></div>  
-<div class="personal_pannel" id="posts">
+<div  id="posts">
   
 </div>
-
-<div class="personal_pannel" >
-  <div class="info_icon">
-    <a target="_blank" href="">
-      <img class="img_person" src="img/sample7.jpg" alt="" >
-    </a>
-  </div>
-  <div class="info_user">margo hupert</div>
-  <div class="gallery_pannel">
-  <div class="gallery_withInfo">
-    <div class="gallery">
-      <a target="_blank" href="">
-        <img src="img/sample5.jpg" alt="" >
-      </a>
-    </div>
-    <div class="comment">
-      <img src="img/icons/like_black.png" width="23px"><br>
-      this is a northern island..
-    </div>
-  </div>
-  <div class="gallery_withInfo">
-    <div class="gallery">
-      <a target="_blank" href="">
-        <img src="img/sample6.jpg" alt="" >
-      </a>
-    </div>
-    <div class="comment">
-      <img src="img/icons/like_black.png" width="23px">
-    </div>
-  </div>
-  <div class="gallery_withInfo">
-    <div class="gallery">
-      <a target="_blank" href="">
-        <img src="img/sample7.jpg" alt="" >
-      </a>
-    </div>
-    <div class="comment">
-     <img src="img/icons/like_black.png" width="23px">
-    </div>
-  </div> 
-  </div>
-</div>
-
 <div class="bottom">
 </div>
 </body>

@@ -12,15 +12,12 @@ const hash = require('./utils/hash.js');
 module.exports.init = function(passport){
 	// Passport needs to be able to serialize and deserialize users to support persistent login sessions
     console.log('init'); 
-    
     passport.serializeUser(function(user, callback) {
         console.log('serializing user1: ' + user);
         console.log('serializing user2: ' + user.username);
         callback(null, user._id);
-    });
-
+    })
     passport.deserializeUser(function(id, callback) {
-        
         User.findById(id, function(err, user) {
             console.log('deserializing user1: ' + user);
             //console.log('deserializing user2: ' + user.username);
@@ -28,7 +25,6 @@ module.exports.init = function(passport){
             callback(err, user);
         });
     });
-
     //set up the login handler
     passport.use('login', new LocalStrategy(handleLoginAttempt));
     //set up the signup handler
@@ -55,7 +51,6 @@ module.exports.isAuthenticated = function (req, res, next) {
 function handleLoginAttempt(email, password, cb){
     //don't log user's passwords in plain text to the console in production
     console.log('userAuth: handleLoginAttempt: email: ' + email + ' password: ' + password);
-    
     Promise.resolve()
     .then(function(){
         //see if there's a user with this email
@@ -82,7 +77,7 @@ function handleSignupAttempt(email, password, cb){
     
     //don't log user's passwords in plain text to the console in production
     
-   
+    console.log('userAuth: handleLoginAttempt: email: ' + email + ' password: ' + password);
     Promise.resolve()
     .then(function(){
         //see if there's a user with this email

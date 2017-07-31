@@ -10,7 +10,6 @@
 
 /* for debugging */
 /*div{ border:1px solid #ccc;}*/
-
 body{ margin:0;}
 .header {
     width: 100%;
@@ -32,7 +31,6 @@ body{ margin:0;}
   padding-top:15px;
   padding-right:5px;
   float:right;
-  
 }
 .icon{
   padding-right:10px;
@@ -50,7 +48,6 @@ body{ margin:0;}
   margin-right:20px;
   color:#8EC5CE;
 }
-
 .body{
    margin:0px;
    background-color: #eee;
@@ -132,9 +129,9 @@ function handleSignup(){
   window.location.assign("signup.html");
 }
 function handleLogin(){
-    var email = $('#email').val();
+ 
+    var email = $('#email').val();   
     var password = $('#password').val();
-    
     if (email.length > 0 && password.length > 0){
         Promise.resolve()
         .then(function(){
@@ -166,7 +163,7 @@ function handleLogin(){
 <div class="header">
   <!--logo display-->
   <div class ="header_log">
-  <a target="_blank" href="">
+  <a target="_blank" href="/posts">
     <img src="img/icons/insta_logo.PNG" alt="" width="" height="">
   </a>
   </div>
@@ -177,7 +174,7 @@ function handleLogin(){
   <!-- icon display -->
   <div class ="header_icons" >
     <div class="icon">
-    <a target="_blank" href="/myPosts.html">
+    <a href="/myPosts">
       <img src="img/icons/header_person.png" alt="" >
     </a> 
     </div>
@@ -185,9 +182,6 @@ function handleLogin(){
     <a target="_blank" href="">
       <img src="img/icons/header_heart.png" alt=""  >
     </a> 
-    </div>
-    <div class="signin">
-      <a href ="/signin.html">sign in</a>
     </div>
   </div>
 </div>
